@@ -17,7 +17,7 @@ app.use(helmet());
 
 const io = new Server(server, {
   cors: {
-    origin: ["https://chatsnest.vercel.app"],
+    origin: "https://chatsnest.vercel.app",
     methods: ["GET", "POST"],
   },
 });
@@ -126,6 +126,10 @@ async function run() {
       socket.on("disconnect", () => {
         // console.log("User disconnected:", socket.id);
       });
+    });
+
+    app.get("/health", (req, res) => {
+      res.status(200).send("OK");
     });
 
     // Send a ping to confirm a successful connection
