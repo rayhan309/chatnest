@@ -17,12 +17,10 @@ app.use(helmet());
 
 const io = new Server(server, {
   cors: {
-    origin: ["https://chatsnest.netlify.app"],
+    origin: ["http://localhost:5173"],
     methods: ["GET", "POST"],
   },
 });
-
-     
 
 const uri = process.env.DB_uri;
 
@@ -42,11 +40,39 @@ async function run() {
 
     const mydb = client.db("flexshipitChats");
     const messagesCollection = mydb.collection("chats");
+    const usersCollection = mydb.collection("users");
+
+    app.post("/users", async (req, res) => {
+      try {
+        const newUser = req.body;
+        newUser.createAt = new Date();
+        const result = await usersCollection.insertOne(newUser);
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+        res.status(500).send({ message: "internel server error?" });
+      }
+    });
+
+    app.get('/users', async (req, res) => {
+      try{
+        const email = req.query.email;
+        const query = {};
+        if(email){
+          query.email = email;
+        }
+
+        const result = await usersCollection.find(query).toArray();
+        res.send(result);
+      }catch{
+        res.status(500).send({ message: "internel server error?" });
+      }
+    });
 
     const chatsRoom = "chatRoom";
 
     io.on("connection", (socket) => {
-      console.log("User connected:", socket.id);
+      // console.log("User connected:", socket.id);
 
       socket.on("userName", async (userName) => {
         await socket.join(chatsRoom);
@@ -82,10 +108,10 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    // await client.db("admin").command({ ping: 1 });
-    // console.log(
-    //   "Pinged your deployment. You successfully connected to MongoDB!"
-    // );
+    await client.db("admin").command({ ping: 1 });
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
