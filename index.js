@@ -90,6 +90,10 @@ async function run() {
       }
     });
 
+    app.get("/health", (req, res) => {
+      res.status(200).send("OK");
+    });
+
     const chatsRoom = "chatRoom";
 
     io.on("connection", (socket) => {
@@ -126,10 +130,6 @@ async function run() {
       socket.on("disconnect", () => {
         // console.log("User disconnected:", socket.id);
       });
-    });
-
-    app.get("/health", (req, res) => {
-      res.status(200).send("OK");
     });
 
     // Send a ping to confirm a successful connection
