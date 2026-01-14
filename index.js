@@ -17,7 +17,7 @@ app.use(helmet());
 
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173"],
+    origin: ["https://chatsnest.vercel.app"],
     methods: ["GET", "POST"],
   },
 });
@@ -41,6 +41,7 @@ async function run() {
     const mydb = client.db("flexshipitChats");
     const messagesCollection = mydb.collection("chats");
     const usersCollection = mydb.collection("users");
+    const smgCollection = mydb.collection("smg");
 
     app.post("/users", async (req, res) => {
       try {
@@ -54,17 +55,37 @@ async function run() {
       }
     });
 
-    app.get('/users', async (req, res) => {
-      try{
+    app.get("/users", async (req, res) => {
+      try {
         const email = req.query.email;
         const query = {};
-        if(email){
+        if (email) {
           query.email = email;
         }
 
         const result = await usersCollection.find(query).toArray();
         res.send(result);
-      }catch{
+      } catch {
+        res.status(500).send({ message: "internel server error?" });
+      }
+    });
+
+    app.post("/messages", async (req, res) => {
+      try {
+        const newSMG = req.body;
+        newSMG.time = new Date();
+        const result = await smgCollection.insertOne(newSMG);
+        res.send(result);
+      } catch {
+        res.status(500).send({ message: "internel server error?" });
+      }
+    });
+
+    app.get("/messages", async (req, res) => {
+      try {
+        const result = await smgCollection.find().toArray();
+        res.send(result);
+      } catch {
         res.status(500).send({ message: "internel server error?" });
       }
     });
@@ -108,10 +129,10 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
