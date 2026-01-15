@@ -8,6 +8,15 @@ const app = express();
 const server = createServer(app);
 const helmet = require("helmet");
 
+var admin = require("firebase-admin");
+
+var serviceAccount = require("./chats-firebase-adminsdk.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+
 // const port =process.env.PORT || 48000;
 
 // middlewer
@@ -17,10 +26,36 @@ app.use(helmet());
 
 const io = new Server(server, {
   cors: {
-    origin: ["https://chatsnest.vercel.app"],
-    methods: ["GET", "POST"], 
+    origin: ["https://chatsnest.vercel.app", "http://localhost:5173"],
+    methods: ["GET", "POST"],
   },
 });
+
+// verify firebase token
+const verifyFirebaseToken = async (req, res, next) => {
+  const header = req.headers;
+  // console.log(header);
+
+  if (!header) {
+    return res.status(401).send({ message: "Unexpacted access!" });
+  }
+
+  try{
+    const token = req.headers.authorization.split(" ")[1];
+        if (token) {
+      const verify = await admin.auth().verifyIdToken(token);
+      req.user_email = verify.email;
+      req.email_verified = verify.email_verified;
+      // console.log(verify);
+      next();
+    }
+
+  }catch{
+    res.status(401).send({ message: "Unexpacted access!" });
+  }
+
+  // next();
+};
 
 const uri = process.env.DB_uri;
 
@@ -55,7 +90,7 @@ async function run() {
       }
     });
 
-    app.get("/users", async (req, res) => {
+    app.get("/users", verifyFirebaseToken, async (req, res) => {
       try {
         const email = req.query.email;
         const query = {};
@@ -81,7 +116,7 @@ async function run() {
       }
     });
 
-    app.get("/messages", async (req, res) => {
+    app.get("/messages", verifyFirebaseToken, async (req, res) => {
       try {
         const result = await smgCollection.find().toArray();
         res.send(result);
