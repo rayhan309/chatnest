@@ -17,8 +17,8 @@ app.use(helmet());
 
 const io = new Server(server, {
   cors: {
-    origin: "https://chatsnest.vercel.app",
-    methods: ["GET", "POST"],
+    origin: ["https://chatsnest.vercel.app"],
+    methods: ["GET", "POST"], 
   },
 });
 
