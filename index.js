@@ -127,7 +127,7 @@ async function run() {
 
     app.get("/health", (req, res) => {
       res.status(200).send("OK");
-    });
+    }); 
 
     const chatsRoom = "chatRoom";
 
