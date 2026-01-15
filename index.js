@@ -8,13 +8,13 @@ const app = express();
 const server = createServer(app);
 const helmet = require("helmet");
 
-var admin = require("firebase-admin");
+// const admin = require("firebase-admin");
 
-var serviceAccount = require("./chats-firebase-adminsdk.json");
+// const serviceAccount = require("./chats-firebase-adminsdk.json");
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount)
+// });
 
 
 // const port =process.env.PORT || 48000;
@@ -40,21 +40,21 @@ const verifyFirebaseToken = async (req, res, next) => {
     return res.status(401).send({ message: "Unexpacted access!" });
   }
 
-  try{
-    const token = req.headers.authorization.split(" ")[1];
-        if (token) {
-      const verify = await admin.auth().verifyIdToken(token);
-      req.user_email = verify.email;
-      req.email_verified = verify.email_verified;
-      // console.log(verify);
-      next();
-    }
+  // try{
+  //   const token = req.headers.authorization.split(" ")[1];
+  //       if (token) {
+  //     const verify = await admin.auth().verifyIdToken(token);
+  //     req.user_email = verify.email;
+  //     req.email_verified = verify.email_verified;
+  //     // console.log(verify);
+  //     next();
+  //   }
 
-  }catch{
-    res.status(401).send({ message: "Unexpacted access!" });
-  }
+  // }catch{
+  //   res.status(401).send({ message: "Unexpacted access!" });
+  // }
 
-  // next();
+  next();
 };
 
 const uri = process.env.DB_uri;
